@@ -43,9 +43,10 @@ class BayesianSmoother(object):
         sum_beta = 0.0
         sum_denominator = 0.0
         for i in range(len(imp_list)):
-            sum_alpha += (special.digamma(click_list[i] + alpha) - special.digamma(alpha))
-            sum_beta += (special.digamma(imp_list[i] - click_list[i] + beta) - special.digamma(beta))
-            sum_denominator += (special.digamma(imp_list[i] + alpha + beta) - special.digamma(alpha + beta))
+            if imp_list[i] >= click_list[i]:         # filter noise
+                sum_alpha += (special.digamma(click_list[i] + alpha) - special.digamma(alpha))
+                sum_beta += (special.digamma(imp_list[i] - click_list[i] + beta) - special.digamma(beta))
+                sum_denominator += (special.digamma(imp_list[i] + alpha + beta) - special.digamma(alpha + beta))
 
         return alpha * (sum_alpha / sum_denominator), beta * (sum_beta / sum_denominator)
 
@@ -64,7 +65,8 @@ class BayesianSmoother(object):
         ctr_list = []
         var = 0.0
         for i in range(len(imp_list)):
-            ctr_list.append(float(click_list[i]) / imp_list[i])
+            if imp_list[i] > 0.0:
+                ctr_list.append(float(click_list[i]) / imp_list[i])
         mean = sum(ctr_list) / len(ctr_list)
         for ctr in ctr_list:
             var += pow(ctr - mean, 2)
